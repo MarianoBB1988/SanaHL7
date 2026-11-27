@@ -1,26 +1,206 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Tokens de DESIGN.md ("Fey": oscuro, negro mate, tipografía luminosa).
+ * Los nombres son semánticos: así los componentes no dependen del tema.
+ */
+@theme {
+  /* Superficies */
+  --color-page: #0b0b0b; /* Fey Ink: fondo de página */
+  --color-paper: #191919; /* Fey Charcoal: cards */
+  --color-canvas: #131313; /* Fey Obsidian: pozos, inputs, capas anidadas */
+  --color-surface-alt: #131313;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Texto */
+  --color-ink: #ffffff; /* Fey White: texto principal */
+  --color-mist: #cccccc; /* Fey Mist: texto terciario, íconos */
+  --color-mid-gray: #868f97; /* Fey Graphite: texto secundario */
+  --color-smoke: #525252; /* Fey Smoke: divisores profundos */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Líneas (blanco con transparencia: hairlines luminosas) */
+  --color-hairline: rgb(255 255 255 / 0.08);
+  --color-line: rgb(255 255 255 / 0.16);
+
+  /* Acentos: solo con significado */
+  --color-ember: #ffa16c; /* cálido: urgencia (alergias activas) */
+  --color-signal: #479ffa; /* navegación: pestaña activa */
+  --color-growth: #4ebe96; /* positivo: consulta completa */
+  /* Errores: DESIGN.md pide un "rojo desaturado" sin valor; este pasa AA sobre #191919. */
+  --color-danger: #f2837a;
+
+  /* Tipografía: Lexend (texto e interfaz) y la fuente de títulos (h1 y secciones). */
+  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-heading-src), ui-sans-serif, system-ui, sans-serif;
+  /* Monoespaciada solo para JSON e ids (requisito del proyecto). */
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+
+  /* Escala (caption sube de 10 a 11 px para que se lea bien en tablas) */
+  --text-caption: 11px;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.04em;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.5;
+  --text-subheading: 18px;
+  --text-subheading--line-height: 1.32;
+  --text-heading-sm: 18px;
+  --text-heading-sm--line-height: 1.32;
+  --text-heading: 26px;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.053em;
+  --text-display: 48px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.06em;
+
+  /* Radios */
+  --radius-small: 6px; /* íconos, barras de carga */
+  --radius-nested: 10px; /* recuadros dentro de cards */
+  --radius-card: 16px; /* cards */
+  --radius-pill: 99px; /* todo lo interactivo */
+
+  /* Sombras: un solo halo negro, sin elevaciones apiladas */
+  --shadow-card: rgba(0, 0, 0, 0.8) 0px 0px 44px 0px;
+  --shadow-glow: rgba(0, 0, 0, 0.85) 0px 1px 0px 0px, rgba(255, 255, 255, 0.25) 0px 0px 14px 0px;
+  --shadow-glow-soft: rgba(255, 255, 255, 0.12) 0px 0px 10px 0px;
+
+  /* Animaciones */
+  --animate-enter: enter 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
   }
 }
 
+html {
+  color-scheme: dark;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01" on, "tnum" on;
+  font-size: 14px;
+}
+
+/*
+ * Textura de fondo, muy tenue:
+ * - dos resplandores apenas visibles arriba (Signal frío a la izquierda, Ember cálido a la derecha);
+ * - grano de película (ruido SVG) encima del fondo y debajo del contenido.
+ * Las cards son opacas: la textura solo se ve en el fondo de la página.
+ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  isolation: isolate;
+  background-image:
+    radial-gradient(1100px 520px at 8% -8%, rgb(71 159 250 / 0.07), transparent 62%),
+    radial-gradient(900px 460px at 100% -4%, rgb(255 161 108 / 0.045), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Títulos de sección en Nunito (las etiquetas chicas en mayúscula también son h3). */
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
+
+::selection {
+  background: rgb(71 159 250 / 0.35);
+}
+
+/* Foco visible para teclado: anillo blanco, máximo contraste sobre negro. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Barra de carga con barrido de luz. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-canvas) 25%,
+    rgb(255 255 255 / 0.07) 50%,
+    var(--color-canvas) 75%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Visor JSON: entra con fundido y escala; el fondo se oscurece. */
+dialog.sana-dialog {
+  opacity: 0;
+  transform: scale(0.97) translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+dialog.sana-dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+@starting-style {
+  dialog.sana-dialog[open] {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+}
+dialog.sana-dialog::backdrop {
+  background: rgb(0 0 0 / 0);
+  backdrop-filter: blur(0);
+  transition:
+    background 220ms ease,
+    backdrop-filter 220ms ease,
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+dialog.sana-dialog[open]::backdrop {
+  background: rgb(0 0 0 / 0.8);
+  backdrop-filter: blur(3px);
+}
+@starting-style {
+  dialog.sana-dialog[open]::backdrop {
+    background: rgb(0 0 0 / 0);
+    backdrop-filter: blur(0);
+  }
+}
+
+/* Respetar "reducir movimiento" del sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  dialog.sana-dialog,
+  dialog.sana-dialog::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
 }
